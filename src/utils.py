@@ -1,4 +1,4 @@
-import libraries
+import numpy as np
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 
 def calculate_fpr(conf_mat): # Multi-class false pos. rate from confusion matrix
