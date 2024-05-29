@@ -1,0 +1,5 @@
+---
+  batch_size : 9
+  in_channels_rfv : 24
+  in_channels_stack : 9
+  num_blocks : 20
