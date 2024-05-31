@@ -3,3 +3,12 @@
   in_channels_rfv : 24
   in_channels_stack : 9
   num_blocks : 20
+
+  learning_rate : 0.001
+  weight_decay : 0.0001
+
+  T_max : 30
+  eta_min : 0.001
+  last_epoch : -1
+
+  num_epochs : 30

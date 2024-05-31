@@ -33,3 +33,7 @@ class PinballLoss:
             loss = loss.mean()
 
         return loss
+    
+# usage:
+# criterion = PinballLoss(quantile = 0.1)
+# loss = criterion(out, gt) Order matters. If (gt, out) = 90th quantile
