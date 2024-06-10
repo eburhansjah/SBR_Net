@@ -19,7 +19,7 @@ except ImportError:
     from yaml import Loader
 
 if __name__ == "__main__":
-    # start_time = time.time()
+    start_time = time.time()
 
     # Reading values from config file
     stream = open("config.yaml", 'r')
@@ -80,9 +80,9 @@ if __name__ == "__main__":
                     device=device, optimizer=optimizer, scaler=scaler, 
                     lr_scheduler=lr_scheduler, criterion=criterion, num_epochs=num_epochs)
     
-    # output = model(rfv_input, stack_input)
-    # print(output.shape) # Should be: Bx24x224x224
+    output = model(rfv_input, stack_input)
+    print(output.shape) # Should be: Bx24x224x224
 
-    # end_time = time.time()
-    # duration = end_time - start_time
-    # print(f"Duration of running the program: {duration: .2f} seconds")
+    end_time = time.time()
+    duration = end_time - start_time
+    print(f"Duration of running the program: {duration: .2f} seconds")
