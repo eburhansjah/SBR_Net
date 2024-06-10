@@ -43,9 +43,11 @@ class TiffDataset(Dataset):
         rfv = tifffile.imread(self.rfv_paths[index])
         truth = tifffile.imread(self.truth_paths[index])
 
-        # Converting tiff into tensor
-        stack = torch.tensor(stack, dtype=torch.float32)
-        rfv = torch.tensor(rfv, dtype=torch.float32)
-        truth = torch.tensor(truth, dtype=torch.float32)
+        '''Converting tiff into tensor and normalizing by dividing values by 255
+        because the tiff files are saved in uint8, which indicates max value is 255
+        (each pixel value ranges from 0 to 255 for uint8)'''
+        stack = torch.tensor(stack, dtype=torch.float32) / 255.0
+        rfv = torch.tensor(rfv, dtype=torch.uint8) / 255.0
+        truth = torch.tensor(truth, dtype=torch.uint8) / 255.0
 
         return stack, rfv, truth

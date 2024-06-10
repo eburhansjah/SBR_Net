@@ -7,8 +7,8 @@
   learning_rate : 0.001
   weight_decay : 0.0001
 
-  T_max : 30
-  eta_min : 0.001
+  T_max : 1000
+  eta_min : 0
   last_epoch : -1
 
   num_epochs : 30
