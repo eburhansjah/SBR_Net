@@ -19,5 +19,5 @@ echo "Job ID : $JOB_ID  $SGE_TASK_ID"
 echo "=========================================================="
 
 source /projectnb/tianlabdl/eburhan/venvs/mynewenv/bin/activate
-
-python ./src/main.py
+module load python3/3.10.12
+python src/main.py
