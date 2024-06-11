@@ -18,6 +18,6 @@ echo "Job name : $JOB_NAME"
 echo "Job ID : $JOB_ID  $SGE_TASK_ID"
 echo "=========================================================="
 
-source /projectnb/tianlabdl/eburhan/venvs/mynewenv/bin/activate
+source /projectnb/tianlabdl/eburhan/SBR_Net/.venv/bin/activate
 module load python3/3.10.12
 python main.py
