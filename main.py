@@ -5,10 +5,9 @@ import yaml
 import time
 import tifffile 
 import pandas as pd
-from loss import PinballLoss
-import train_and_validate
 
-from yaml import load
+from loss import PinballLoss
+from src.train_and_validate import train_and_validate
 from torch.utils.data import DataLoader, random_split
 from data_loader import read_pq_file, TiffDataset
 from src.SBR_NET import SBR_Net, kaiming_he_init
@@ -80,9 +79,8 @@ if __name__ == "__main__":
                     device=device, optimizer=optimizer, scaler=scaler, 
                     lr_scheduler=lr_scheduler, criterion=criterion, num_epochs=num_epochs)
     
-    output = model(rfv_input, stack_input)
-    print(output.shape) # Should be: Bx24x224x224
 
+    
     end_time = time.time()
     duration = end_time - start_time
     print(f"Duration of running the program: {duration: .2f} seconds")

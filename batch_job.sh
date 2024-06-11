@@ -20,4 +20,4 @@ echo "=========================================================="
 
 source /projectnb/tianlabdl/eburhan/venvs/mynewenv/bin/activate
 module load python3/3.10.12
-python src/main.py
+python main.py

@@ -129,6 +129,6 @@ class SBR_Net(nn.Module):
         out = (out_rfv + out_stack) / math.sqrt(2)
         
         out = self.conv_48_to_24(out)
-        out = self.sigmoid(out)
+        out = self.sigmoid(out) 
 
-        return out
+        return out # Shape of output should be: Bx24x224x224
