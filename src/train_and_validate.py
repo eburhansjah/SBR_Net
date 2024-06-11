@@ -4,7 +4,7 @@ import tifffile
 import matplotlib.pyplot as plt
 
 from tqdm import tqdm
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 def loss_plot_and_save(train_losses, val_losses):
     plt.plot(train_losses, label='Training Loss')
@@ -20,7 +20,7 @@ def train_and_validate(net, train_loader, val_loader, device, optimizer, scaler,
     if torch.cuda.is_available():
         net.cuda()
 
-    save_output_dir = '/SBR_NET/output/'
+    save_output_dir = '/projectnb/tianlabdl/eburhan/SBR_Net/output/'
     os.makedirs(save_output_dir, exist_ok=True)
 
     writer = SummaryWriter(log_dir='logs')
@@ -33,7 +33,7 @@ def train_and_validate(net, train_loader, val_loader, device, optimizer, scaler,
         net.train()
         train_loss = []
         train_pb = tqdm(enumerate(train_loader), 
-                            total=len(train_loader), dec=f"Epoch {epoch + 1}/{num_epochs} - Training")
+                            total=len(train_loader), desc=f"Epoch {epoch + 1}/{num_epochs} - Training")
         
         for i, (stack, rfv, truth) in train_pb:
             stack, rfv, truth = stack.to(device), rfv.to(device), truth.to(device)
@@ -67,7 +67,7 @@ def train_and_validate(net, train_loader, val_loader, device, optimizer, scaler,
         net.eval()
         val_loss = []
         val_pb = tqdm(enumerate(val_loader), 
-                            total=len(val_loader), dec=f"Epoch {epoch + 1}/{num_epochs} - Validating")
+                            total=len(val_loader), desc=f"Epoch {epoch + 1}/{num_epochs} - Validating")
         
         with torch.no_grad():
             for i, (stack, rfv, truth) in val_pb:
