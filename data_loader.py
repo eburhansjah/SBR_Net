@@ -5,15 +5,9 @@ import tifffile
 
 from torch.utils.data import Dataset
 
-"""
-Function to:
-1) retrieve information from .pq file
-2) Randomly selects one .pq file, 
-3) Read its corresponding .tiff file 
-4) Converting .tiff to torch tensors
-"""
+
 def read_pq_file(file_path):
-    random_num = rd.randrange(500)
+    random_num = 5 # rd.randrange(500)
 
     df = pd.read_parquet(file_path)
     
@@ -22,10 +16,10 @@ def read_pq_file(file_path):
     ground_truth_path = df.iloc[random_num]['gt_path']
 
     return stack_path, rfv_path, ground_truth_path
-
+    
 
 ##########
-# Dataset class s.t. we can work with one or more tiff files
+# Creating Data Loader
 ##########
 class TiffDataset(Dataset):
     def __init__(self, stack_paths, rfv_paths, truth_paths):
@@ -38,16 +32,17 @@ class TiffDataset(Dataset):
         '''Return length of the dataset.'''
         return len(self.stack_paths)
     
-    def __getitem__(self): # index
-        stack = tifffile.imread(self.stack_paths)
-        rfv = tifffile.imread(self.rfv_paths)
-        truth = tifffile.imread(self.truth_paths)
+    def __getitem__(self, idx):
+        stack = tifffile.imread(self.stack_paths[idx])
+        rfv = tifffile.imread(self.rfv_paths[idx])
+        truth = tifffile.imread(self.truth_paths[idx])
 
-        '''Converting tiff into tensor and normalizing by dividing values by 255
-        because the tiff files are saved in uint8, which indicates max value is 255
-        (each pixel value ranges from 0 to 255  for uint8)'''
-        stack = torch.tensor(stack, dtype=torch.float32) / 255.0
-        rfv = torch.tensor(rfv, dtype=torch.float32) / 255.0
-        truth = torch.tensor(truth, dtype=torch.float32) / 255.0
+        '''Converting tiff into tensor and normalizing by dividing values by 65535.0
+        because the tiff files are saved in uint16, which indicates max value is 65535.0
+        (each pixel value ranges from 0 to 65535  for uint16)
+        Note: Look at data_visualization.ipynb for more details'''
+        stack = torch.tensor(stack, dtype=torch.float32) / 65535.0
+        rfv = torch.tensor(rfv, dtype=torch.float32) / 65535.0
+        truth = torch.tensor(truth, dtype=torch.float32) / 65535.0
 
         return stack, rfv, truth
