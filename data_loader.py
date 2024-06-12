@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 
 def read_pq_file(file_path):
-    random_num = 5 # rd.randrange(500)
+    random_num = 456 # rd.randrange(500)
 
     df = pd.read_parquet(file_path)
     
