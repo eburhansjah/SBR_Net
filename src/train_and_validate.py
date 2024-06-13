@@ -12,6 +12,7 @@ def loss_plot_and_save(train_losses, val_losses):
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
 
+    plt.grid(True)
     plt.legend()
     plt.savefig('train_val_loss_plot.png')
     return
@@ -26,12 +27,14 @@ def train_and_validate(net, train_loader, val_loader, device, optimizer, scaler,
     writer = SummaryWriter(log_dir='logs')
     ##########
     # Training loop
-    ##########            
+    ##########
+    train_loss = []
+    val_loss = []            
     for epoch in range(num_epochs):
         print('Epoch: ', epoch)
 
         net.train()
-        train_loss = []
+
         train_pb = tqdm(enumerate(train_loader), 
                             total=len(train_loader), desc=f"Epoch {epoch + 1}/{num_epochs} - Training")
         
@@ -65,7 +68,6 @@ def train_and_validate(net, train_loader, val_loader, device, optimizer, scaler,
         # Validation loop
         ##########
         net.eval()
-        val_loss = []
         val_pb = tqdm(enumerate(val_loader), 
                             total=len(val_loader), desc=f"Epoch {epoch + 1}/{num_epochs} - Validating")
         
@@ -89,8 +91,7 @@ def train_and_validate(net, train_loader, val_loader, device, optimizer, scaler,
         avg_train_loss = sum_train_loss / len(train_loader)
         avg_val_loss = sum_val_loss / len(val_loader)
 
-        print(f'Epoch [{epoch + 1}/{num_epochs}], 
-              Average Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}')
+        print(f"Epoch [{epoch + 1}/{num_epochs}], Average Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}")
         
         # Logging avg. losses with TensorBoard
         writer.add_scalar('Avg. Training Loss', avg_train_loss, epoch)

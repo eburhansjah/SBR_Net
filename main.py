@@ -25,8 +25,8 @@ if __name__ == "__main__":
     docs = yaml.safe_load(stream)
 
     if docs:
-        # Flag on training one or multiple samples
-        train_single_sample = docs.get("train_single_sample")
+        # Flag on training one or multiple samples (Default: mult. samples)
+        train_single_sample = docs.get("train_single_sample", False)
 
         # Model parameters
         batch_size = docs.get("batch_size")
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     input_file_path = "metadata.pq"
 
     # Reading .tiff files
-    stack_paths, rfv_paths, truth_paths = read_pq_file(input_file_path)
+    stack_paths, rfv_paths, truth_paths = read_pq_file(input_file_path, one_sample=train_single_sample)
 
     # Converting .tiff files into tensor
     dataset = TiffDataset(stack_paths=stack_paths, rfv_paths=rfv_paths, truth_paths=truth_paths)
