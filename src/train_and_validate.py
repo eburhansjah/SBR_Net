@@ -54,7 +54,9 @@ def train_and_validate(net, train_loader, val_loader, device, optimizer, scaler,
             # lr_scheduler.step(epoch + i / len(train_loader))
 
             train_loss.append(loss.item())
-            train_pb.set_postfix({"loss": train_loss / (i + 1)}) # Progress bar with updated current loss value
+
+            # Progress bar with updated current training loss value
+            train_pb.set_postfix({"Current training loss": loss.item()})
 
         lr_scheduler.step()
 
@@ -76,11 +78,9 @@ def train_and_validate(net, train_loader, val_loader, device, optimizer, scaler,
                     loss = criterion(fwd_output, truth)
 
                 val_loss.append(loss.item())
-                val_pb.set_postfix({"loss": val_loss / (i + 1)})
-        
-        # Logging losses with TensorBoardX
-        writer.add_scalar('Training Loss', train_loss, epoch)
-        writer.add_scalar('Validation Loss', val_loss, epoch)
+
+                # Progress bar with updated current validation loss value
+                val_pb.set_postfix({"Current validation loss": loss.item()})
         
         # Calculating average train and validation loss
         sum_train_loss = sum(train_loss)
@@ -89,7 +89,12 @@ def train_and_validate(net, train_loader, val_loader, device, optimizer, scaler,
         avg_train_loss = sum_train_loss / len(train_loader)
         avg_val_loss = sum_val_loss / len(val_loader)
 
-        print(f'Epoch [{epoch + 1}/{num_epochs}], Average Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}')
+        print(f'Epoch [{epoch + 1}/{num_epochs}], 
+              Average Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}')
+        
+        # Logging avg. losses with TensorBoard
+        writer.add_scalar('Avg. Training Loss', avg_train_loss, epoch)
+        writer.add_scalar('Avg. Validation Loss', avg_val_loss, epoch)
 
         # Saving model output after each epoch
         output_path = os.path.join(save_output_dir, f'epoch_{epoch + 1}_output.tif')
