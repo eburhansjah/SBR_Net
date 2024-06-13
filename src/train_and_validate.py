@@ -45,9 +45,7 @@ def train_and_validate(net, train_loader, val_loader, device, optimizer, scaler,
                 loss = criterion(fwd_output, truth)
 
                 '''Calling step after every batch update'''
-                loss.backward()
                 optimizer.step()
-
 
             scaler.scale(loss).backward()
             scaler.step(optimizer)
