@@ -12,3 +12,5 @@
   last_epoch : -1
 
   num_epochs : 30
+
+  train_single_sample : True

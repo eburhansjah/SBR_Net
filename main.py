@@ -25,6 +25,9 @@ if __name__ == "__main__":
     docs = yaml.safe_load(stream)
 
     if docs:
+        # Flag on training one or multiple samples
+        train_single_sample = docs.get("train_single_sample")
+
         # Model parameters
         batch_size = docs.get("batch_size")
         in_channels_rfv = docs.get("in_channels_rfv")
@@ -42,9 +45,11 @@ if __name__ == "__main__":
 
         num_epochs = docs.get("num_epochs")
 
-    input_file_path = "/ad/eng/research/eng_research_cisl/jalido/sbrnet/data/training_data/UQ/vasc/15/metadata.pq"
-    # df = pd.read_parquet(input_file_path)
-    # print(df.head())
+    ##Vascular dataset
+    # input_file_path = "/ad/eng/research/eng_research_cisl/jalido/sbrnet/data/training_data/UQ/vasc/15/metadata.pq"
+    
+    # Non-vascular dataset
+    input_file_path = "metadata.pq"
 
     # Reading .tiff files
     stack_paths, rfv_paths, truth_paths = read_pq_file(input_file_path)
@@ -52,14 +57,18 @@ if __name__ == "__main__":
     # Converting .tiff files into tensor
     dataset = TiffDataset(stack_paths=stack_paths, rfv_paths=rfv_paths, truth_paths=truth_paths)
 
-    # Splitting dataset randomly into training and validation (80% and 20% respectively)
-    train_sz = round(0.8 * len(dataset))
-    val_sz = round(0.2 * len(dataset))
-    train_ds, val_ds = random_split(dataset, [train_sz, val_sz])
-    
-    # Creating training and validation data loaders
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
+    if train_single_sample:
+        train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
+        val_loader = DataLoader(dataset, batch_size=1, shuffle=False)
+    else:
+        # Splitting dataset randomly into training and validation (80% and 20% respectively)
+        train_sz = round(0.8 * len(dataset))
+        val_sz = round(0.2 * len(dataset))
+        train_ds, val_ds = random_split(dataset, [train_sz, val_sz])
+        
+        # Creating training and validation data loaders
+        train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -80,7 +89,7 @@ if __name__ == "__main__":
                     lr_scheduler=lr_scheduler, criterion=criterion, num_epochs=num_epochs)
     
 
-    
+
     end_time = time.time()
     duration = end_time - start_time
     print(f"Duration of running the program: {duration: .2f} seconds")

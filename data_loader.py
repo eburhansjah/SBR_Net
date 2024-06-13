@@ -6,14 +6,20 @@ import tifffile
 from torch.utils.data import Dataset
 
 
-def read_pq_file(file_path):
-    random_num = 456 # rd.randrange(500)
-
+def read_pq_file(file_path, one_sample = False):
+    # Make sure that they're in a list format for it to work with data loader class
     df = pd.read_parquet(file_path)
     
-    stack_path = df.iloc[random_num]['stack_scat_path'] # 9 channel
-    rfv_path = df.iloc[random_num]['rfv_scat_path'] # 24 channel
-    ground_truth_path = df.iloc[random_num]['gt_path']
+    if one_sample:
+        random_num = 456 # rd.randrange(500)
+        
+        stack_path = [df.iloc[random_num]['stack_scat_path']] # 9 channel
+        rfv_path = [df.iloc[random_num]['rfv_scat_path']] # 24 channel
+        ground_truth_path = [df.iloc[random_num]['gt_path']]
+    else:
+        stack_path = df['stack_scat_path'].tolist()
+        rfv_path = df['rfv_scat_path'].tolist()
+        ground_truth_path = df['gt_path'].tolist()
 
     return stack_path, rfv_path, ground_truth_path
     
