@@ -1,4 +1,7 @@
 ---
+  project_name : SBR_Net_eburhan
+  entity : cisl-bu
+  
   batch_size : 9
   in_channels_rfv : 24
   in_channels_stack : 9
