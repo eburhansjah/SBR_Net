@@ -3,8 +3,7 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as scheduler
 import yaml
 import time
-import tifffile 
-import pandas as pd
+import wandb
 
 from loss import PinballLoss
 from src.train_and_validate import train_and_validate
@@ -23,6 +22,9 @@ if __name__ == "__main__":
     # Reading values from config file
     stream = open("config.yaml", 'r')
     docs = yaml.safe_load(stream)
+
+    run = wandb.init(project=docs["project_name"], 
+               entity=docs["entity"], config=docs)
 
     if docs:
         # Flag on training one or multiple samples (Default: mult. samples)
@@ -67,7 +69,7 @@ if __name__ == "__main__":
         train_ds, val_ds = random_split(dataset, [train_sz, val_sz])
         
         # Creating training and validation data loaders
-        train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+        train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=False)
         val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -82,9 +84,9 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     lr_scheduler = scheduler.CosineAnnealingLR(optimizer, T_max, eta_min, last_epoch)
 
-    criterion = PinballLoss(quantile=0.1) # Default is 0.1
-
-    train_and_validate(net=model, train_loader=train_loader, val_loader=val_loader,
+    # criterion = PinballLoss(quantile=0.1) # Default is 0.1
+    criterion = torch.nn.BCELoss()
+    train_and_validate(run=run, net=model, train_loader=train_loader, val_loader=val_loader,
                     device=device, optimizer=optimizer, scaler=scaler, 
                     lr_scheduler=lr_scheduler, criterion=criterion, num_epochs=num_epochs)
     
