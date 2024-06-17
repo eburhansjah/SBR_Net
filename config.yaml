@@ -17,3 +17,5 @@
   num_epochs : 30
 
   train_single_sample : True
+
+  use_mixed_precision : False

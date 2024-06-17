@@ -49,7 +49,9 @@ def compare_output_and_gt(run, gt_tensor, out_tensor, epoch):
     return
 
 
-def train_and_validate(run, net, train_loader, val_loader, device, optimizer, scaler, lr_scheduler, criterion, num_epochs):
+def train_and_validate(run, net, train_loader, val_loader, device, optimizer, 
+                       scaler, lr_scheduler, criterion, num_epochs,
+                       use_mixed_precision):
     if torch.cuda.is_available():
         net.cuda()
 
@@ -75,16 +77,19 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer, sc
 
             optimizer.zero_grad()
             
-            with torch.cuda.amp.autocast(enabled=True):
+            if use_mixed_precision:
+                with torch.cuda.amp.autocast(enabled=True):
+                    fwd_output = net(rfv, stack)
+                    loss = criterion(fwd_output, truth)
+
+                scaler.scale(loss).backward()
+                scaler.step(optimizer)
+                scaler.update()
+            else:
                 fwd_output = net(rfv, stack)
                 loss = criterion(fwd_output, truth)
-
-                '''Calling step after every batch update'''
+                loss.backward()
                 optimizer.step()
-
-            scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
 
             # lr_scheduler.step(epoch + i / len(train_loader))
 
@@ -107,7 +112,11 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer, sc
             for i, (stack, rfv, truth) in val_pb:
                 stack, rfv, truth = stack.to(device), rfv.to(device), truth.to(device)
 
-                with torch.cuda.amp.autocast(enabled=True):
+                if use_mixed_precision:
+                    with torch.cuda.amp.autocast(enabled=True):
+                        fwd_output = net(rfv, stack)
+                        loss = criterion(fwd_output, truth)
+                else:
                     fwd_output = net(rfv, stack)
                     loss = criterion(fwd_output, truth)
 

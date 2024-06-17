@@ -30,6 +30,9 @@ if __name__ == "__main__":
         # Flag on training one or multiple samples (Default: mult. samples)
         train_single_sample = docs.get("train_single_sample", False)
 
+        # Flag on whether or not to use mixed precision (Default: false)
+        use_mixed_precision = docs.get("use_mixed_precision")
+
         # Model parameters
         batch_size = docs.get("batch_size")
         in_channels_rfv = docs.get("in_channels_rfv")
@@ -88,7 +91,8 @@ if __name__ == "__main__":
     criterion = torch.nn.BCELoss()
     train_and_validate(run=run, net=model, train_loader=train_loader, val_loader=val_loader,
                     device=device, optimizer=optimizer, scaler=scaler, 
-                    lr_scheduler=lr_scheduler, criterion=criterion, num_epochs=num_epochs)
+                    lr_scheduler=lr_scheduler, criterion=criterion, num_epochs=num_epochs,
+                    use_mixed_precision=use_mixed_precision)
     
     wandb.finish() # End loggin with wandb
 
