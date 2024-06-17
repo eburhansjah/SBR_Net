@@ -1,21 +1,31 @@
----
-  project_name : SBR_Net_eburhan
-  entity : cisl-bu
-  
-  batch_size : 9
-  in_channels_rfv : 24
-  in_channels_stack : 9
-  num_blocks : 20
+project_name: SBR_Net_eburhan
+entity: cisl-bu
 
-  learning_rate : 0.001
-  weight_decay : 0.0001
+progran: main.py
+method: random # random, grid, bayes, hyperband
 
-  T_max : 1000
-  eta_min : 0
-  last_epoch : -1
+metric:
+  name: train_loss
+  goal: minimize
 
-  num_epochs : 30
+parameters:
+  batch_size: 9
+  in_channels_rfv: 24
+  in_channels_stack: 9
+  num_blocks: 20
 
-  train_single_sample : True
+  learning_rate: 
+    values: [0.001, 0.01]
+  weight_decay: 
+    values: [1e-3, 1e-5, 1e-7]
 
-  use_mixed_precision : False
+  T_max: 1000
+  eta_min: 0
+  last_epoch: -1
+
+  num_epochs: 
+    values: [30, 50, 100, 150, 200, 250, 300]
+
+train_single_sample: True
+
+use_mixed_precision: False
