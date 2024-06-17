@@ -90,7 +90,7 @@ if __name__ == "__main__":
                     device=device, optimizer=optimizer, scaler=scaler, 
                     lr_scheduler=lr_scheduler, criterion=criterion, num_epochs=num_epochs)
     
-
+    wandb.finish() # End loggin with wandb
 
     end_time = time.time()
     duration = end_time - start_time

@@ -4,7 +4,7 @@ import tifffile
 import matplotlib.pyplot as plt
 
 from tqdm import tqdm
-from torch.utils.tensorboard import SummaryWriter
+
 
 def loss_plot_and_save(train_losses, val_losses):
     plt.plot(train_losses, label='Training Loss')
@@ -17,14 +17,46 @@ def loss_plot_and_save(train_losses, val_losses):
     plt.savefig('train_val_loss_plot.png')
     return
 
-def train_and_validate(net, train_loader, val_loader, device, optimizer, scaler, lr_scheduler, criterion, num_epochs):
+'''Fn. for comparing model output and ground truth'''
+def compare_output_and_gt(run, gt_tensor, out_tensor, epoch):
+    gt_tensor = gt_tensor.cpu().detach()
+    out_tensor = out_tensor.cpu().detach()
+
+    # Removing extra dimension (batch size)
+    gt_tensor = gt_tensor.squeeze(0)
+    out_tensor = out_tensor.squeeze(0)
+
+    # Using max. intensity projection (mip) to visualize images with multiple channels
+    gt_mip = gt_tensor.max(dim=0).values
+    out_mip = out_tensor.max(dim=0).values
+
+
+    plt.figure(figsize=(14, 5))
+    plt.subplot(1, 2, 1)
+    plt.imshow(gt_mip.numpy())
+    plt.colorbar()
+    plt.title("Ground truth image")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(out_mip.numpy())
+    plt.colorbar()
+    plt.title("Model output image")
+
+    plt.suptitle(f"MIP images of gt and model output at epoch: {epoch + 1}")
+
+    run.log({"Visualization": plt})
+
+    return
+
+
+def train_and_validate(run, net, train_loader, val_loader, device, optimizer, scaler, lr_scheduler, criterion, num_epochs):
     if torch.cuda.is_available():
         net.cuda()
 
     save_output_dir = '/projectnb/tianlabdl/eburhan/SBR_Net/output/'
     os.makedirs(save_output_dir, exist_ok=True)
 
-    writer = SummaryWriter(log_dir='logs')
+
     ##########
     # Training loop
     ##########
@@ -93,17 +125,18 @@ def train_and_validate(net, train_loader, val_loader, device, optimizer, scaler,
 
         print(f"Epoch [{epoch + 1}/{num_epochs}], Average Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}")
         
-        # Logging avg. losses with TensorBoard
-        writer.add_scalar('Avg. Training Loss', avg_train_loss, epoch)
-        writer.add_scalar('Avg. Validation Loss', avg_val_loss, epoch)
+        # Logging avg. losses with wandb
+        run.log({'AvgTrainingLoss' : avg_train_loss,
+                 'AvgValidationLoss' : avg_val_loss})
+        
+        # Logging images with wandb
+        compare_output_and_gt(run=run, gt_tensor=truth, out_tensor=fwd_output, epoch=epoch)
 
-        # Saving model output after each epoch
-        output_path = os.path.join(save_output_dir, f'epoch_{epoch + 1}_output.tif')
-        tifffile.imwrite(output_path, fwd_output.cpu().numpy())
+        # # Saving model output after each epoch
+        # output_path = os.path.join(save_output_dir, f'epoch_{epoch + 1}_output.tif')
+        # tifffile.imwrite(output_path, fwd_output.cpu().numpy())
 
-    writer.close()
-
-    print('Finished Training and Validating')
+    print('Finished Training and Validating with values logged in wandb!')
 
     # Plotting training and validation loss
     loss_plot_and_save(train_loss, val_loss)
