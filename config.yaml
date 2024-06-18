@@ -9,23 +9,30 @@ metric:
   goal: minimize
 
 parameters:
-  batch_size: 9
-  in_channels_rfv: 24
-  in_channels_stack: 9
-  num_blocks: 20
+  batch_size: 
+    values: [9] # [4, 8, 16, 32]
+  in_channels_rfv: 
+    values: [24]
+  in_channels_stack:
+    values: [9]
+  num_blocks: 
+    values: [20]
 
   learning_rate: 
-    values: [0.001, 0.01]
+    values: [1e-3, 1e-2, 1e-1]
   weight_decay: 
     values: [1e-3, 1e-5, 1e-7]
-
-  T_max: 1000
-  eta_min: 0
-  last_epoch: -1
-
+  T_max:
+    values: [100, 500, 1000]
+  eta_min:
+    values: [0, 1e-3]
+  last_epoch:
+    values: [-1]
   num_epochs: 
     values: [30, 50, 100, 150, 200, 250, 300]
 
-train_single_sample: True
+train_single_sample: 
+  values: [True] # [True, False]
 
-use_mixed_precision: False
+use_mixed_precision: 
+  values: [False] # [True, False]
