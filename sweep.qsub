@@ -21,4 +21,4 @@ source /projectnb/tianlabdl/eburhan/SBR_Net/.venv/bin/activate
 # Assuming your Python script is in the current directory
 # Replace "your_sweep_id" with the actual sweep ID
 # 'count' specifes the number of runs
-wandb agent --count 1 cisl-bu/SBR_Net/vaa7sx5m
+wandb agent --count 1 cisl-bu/SBR_Net_eburhan/fuv1u87p
