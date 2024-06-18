@@ -4,6 +4,7 @@ import torch.optim.lr_scheduler as scheduler
 import yaml
 import time
 import wandb
+import pprint
 
 from loss import PinballLoss
 from src.train_and_validate import train_and_validate
@@ -11,44 +12,36 @@ from torch.utils.data import DataLoader, random_split
 from data_loader import read_pq_file, TiffDataset
 from src.SBR_NET import SBR_Net, kaiming_he_init
 
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
 
-if __name__ == "__main__":
+def main():
     start_time = time.time()
 
-    # Reading values from config file
-    stream = open("config.yaml", 'r')
-    docs = yaml.safe_load(stream)
+    # Initializing wanb sweep
+    run = wandb.init(project="SBR_Net_eburhan", entity="cisl-bu")
+    config = run.config
+    
+    # Flag on training one or multiple samples (Default: mult. samples)
+    train_single_sample = config.get("train_single_sample", False)
 
-    run = wandb.init(project=docs["project_name"], 
-               entity=docs["entity"], config=docs)
+    # Flag on whether or not to use mixed precision (Default: false)
+    use_mixed_precision = config.get("use_mixed_precision")
 
-    if docs:
-        # Flag on training one or multiple samples (Default: mult. samples)
-        train_single_sample = docs.get("train_single_sample", False)
+    # Model parameters
+    batch_size = config.get("batch_size")
+    in_channels_rfv = config.get("in_channels_rfv")
+    in_channels_stack = config.get("in_channels_stack")
+    num_blocks = config.get("num_blocks")
 
-        # Flag on whether or not to use mixed precision (Default: false)
-        use_mixed_precision = docs.get("use_mixed_precision")
+    # Optimizer parameters
+    learning_rate = config.get("learning_rate")
+    weight_decay = config.get("weight_decay")
 
-        # Model parameters
-        batch_size = docs.get("batch_size")
-        in_channels_rfv = docs.get("in_channels_rfv")
-        in_channels_stack = docs.get("in_channels_stack")
-        num_blocks = docs.get("num_blocks")
+    # Scheduler parameters
+    T_max = config.get("T_max")
+    eta_min = config.get("eta_min")
+    last_epoch = config.get("last_epoch")
 
-        # Optimizer parameters
-        learning_rate = docs.get("learning_rate")
-        weight_decay = docs.get("weight_decay")
-
-        # Scheduler parameters
-        T_max = docs.get("T_max")
-        eta_min = docs.get("eta_min")
-        last_epoch = docs.get("last_epoch")
-
-        num_epochs = docs.get("num_epochs")
+    num_epochs = config.get("num_epochs")
 
     ##Vascular dataset
     # input_file_path = "/ad/eng/research/eng_research_cisl/jalido/sbrnet/data/training_data/UQ/vasc/15/metadata.pq"
@@ -99,3 +92,6 @@ if __name__ == "__main__":
     end_time = time.time()
     duration = end_time - start_time
     print(f"Duration of running the program: {duration: .2f} seconds")
+
+if __name__ == "__main__":
+    main()
