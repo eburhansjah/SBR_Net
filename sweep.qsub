@@ -1,0 +1,24 @@
+#!/bin/bash -l
+
+#$ -P tianlabdl		    # Specify SCC project name
+#$ -l h_rt=12:00:00	    # Hard time limit for the job
+#$ -pe omp 4            # Request 4 CPUs
+#$ -l gpus=1            # Request 1 GPU
+#$ -l gpu_c=6.0         # Specify the minimum GPU compute capability 
+
+#$ -m e				    # Notify through email
+
+#$ -N SBR_Net		    # Specify job name
+
+#$ -j y				    # Merging error and output streams into single file
+
+#$ -t 1-20              # array jobs to define number of nodes/sweep agents to use on the SCC
+
+
+module load python3/3.10.12
+source /projectnb/tianlabdl/eburhan/SBR_Net/.venv/bin/activate
+
+# Assuming your Python script is in the current directory
+# Replace "your_sweep_id" with the actual sweep ID
+# 'count' specifes the number of runs
+wandb agent --count 1 cisl-bu/SBR_Net/vaa7sx5m
