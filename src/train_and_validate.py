@@ -1,5 +1,6 @@
-import torch
 import os
+import torch
+import wandb
 import matplotlib.pyplot as plt
 
 from tqdm import tqdm
@@ -15,7 +16,8 @@ def loss_plot_and_save(run, train_losses, val_losses):
     plt.legend()
     plt.savefig('train_val_loss_plot.png')
 
-    run.log({"Visualization on training and validation losses": plt})
+    # run.log({"Visualization on training and validation losses": plt})
+    run.log({"train_validation_loss_plot" : wandb.Image(plt)})
 
     plt.close()
 
@@ -48,7 +50,8 @@ def compare_output_and_gt(run, gt_tensor, out_tensor, epoch):
 
     plt.suptitle(f"MIP images of gt and model output at epoch: {epoch + 1}")
 
-    run.log({"Visualization on model output and gt": plt})
+    # run.log({"Visualization on model output and gt": plt})
+    run.log({"model_output_vs_gt" : wandb.Image(plt)})
 
     plt.close()
 
@@ -79,7 +82,7 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
                             total=len(train_loader), desc=f"Epoch {epoch + 1}/{num_epochs} - Training")
         
         epoch_train_loss = []
-        for i, (stack, rfv, truth) in train_pb:
+        for _, (stack, rfv, truth) in train_pb:
             stack, rfv, truth = stack.to(device), rfv.to(device), truth.to(device)
 
             optimizer.zero_grad()
@@ -117,7 +120,7 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
                             total=len(val_loader), desc=f"Epoch {epoch + 1}/{num_epochs} - Validating")
         
         with torch.no_grad():
-            for i, (stack, rfv, truth) in val_pb:
+            for _, (stack, rfv, truth) in val_pb:
                 stack, rfv, truth = stack.to(device), rfv.to(device), truth.to(device)
 
                 if use_mixed_precision:
