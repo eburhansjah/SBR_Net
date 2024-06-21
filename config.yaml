@@ -5,7 +5,7 @@ progran: main.py
 method: random # random, grid, bayes, hyperband
 
 metric:
-  name: train_loss
+  name: avg_train_loss
   goal: minimize
 
 parameters:
