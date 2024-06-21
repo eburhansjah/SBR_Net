@@ -1,7 +1,6 @@
 import torch
 import torch.optim as optim
 import torch.optim.lr_scheduler as scheduler
-import yaml
 import time
 import wandb
 import pprint
@@ -19,6 +18,8 @@ def main():
     # Initializing wanb sweep
     run = wandb.init(project="SBR_Net_eburhan", entity="cisl-bu")
     config = run.config
+    print("Configuration of parameters:")
+    pprint.pprint(config)
     
     # Flag on training one or multiple samples (Default: mult. samples)
     train_single_sample = config.get("train_single_sample", False)
