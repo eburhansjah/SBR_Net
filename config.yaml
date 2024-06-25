@@ -1,8 +1,8 @@
 project: SBR_Net_eburhan
 entity: cisl-bu
 
-progran: main.py
-method: random # random, grid, bayes, hyperband
+program: main.py
+method: grid # random, grid, bayes, hyperband
 
 metric:
   name: avg_train_loss
@@ -10,29 +10,29 @@ metric:
 
 parameters:
   batch_size: 
-    values: [9] # [4, 8, 16, 32]
+    value: 9 # [4, 8, 16, 32]
   in_channels_rfv: 
-    values: [24]
+    value: 24
   in_channels_stack:
-    values: [9]
+    value: 9
   num_blocks: 
-    values: [20]
+    value: 10 #[10, 15, 20]
 
   learning_rate: 
-    values: [1e-3, 1e-2, 1e-1]
+    value: 1e-4 #[1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
   weight_decay: 
-    values: [1e-3, 1e-5, 1e-7]
+    value: 1e-5 # [1e-3, 1e-5, 1e-7]
   T_max:
-    values: [100, 500, 1000]
+    value: 100 # [100, 500, 1000]
   eta_min:
-    values: [0, 1e-3]
+    value: 1e-7
   last_epoch:
-    values: [-1]
+    value: -1
   num_epochs: 
-    values: [30, 50, 100, 150, 200, 250, 300]
+    value: 999999
 
 train_single_sample: 
-  values: [True] # [True, False]
+  value: True # [True, False]
 
 use_mixed_precision: 
-  values: [False] # [True, False]
+  value: False # [True, False]
