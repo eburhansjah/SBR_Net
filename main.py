@@ -1,6 +1,7 @@
 import torch
 import torch.optim as optim
 import torch.optim.lr_scheduler as scheduler
+import torchvision.models as models
 import time
 import wandb
 import pprint
@@ -8,6 +9,7 @@ import pprint
 from loss import PinballLoss
 from src.train_and_validate import train_and_validate
 from torch.utils.data import DataLoader, random_split
+from torch.profiler import profile, record_function, ProfilerActivity
 from data_loader import read_pq_file, TiffDataset
 from src.SBR_NET import SBR_Net, kaiming_he_init
 
@@ -16,13 +18,13 @@ def main():
     start_time = time.time()
 
     # Initializing wanb sweep
-    run = wandb.init(project="SBR_Net_eburhan", entity="cisl-bu")
+    run = wandb.init()
     config = run.config
     print("Configuration of parameters:")
     pprint.pprint(config)
     
     # Flag on training one or multiple samples (Default: mult. samples)
-    train_single_sample = config.get("train_single_sample", False)
+    train_single_sample = config.get("train_single_sample")
 
     # Flag on whether or not to use mixed precision (Default: false)
     use_mixed_precision = config.get("use_mixed_precision")
@@ -56,10 +58,12 @@ def main():
     # Converting .tiff files into tensor
     dataset = TiffDataset(stack_paths=stack_paths, rfv_paths=rfv_paths, truth_paths=truth_paths)
 
-    if train_single_sample:
+    if train_single_sample == 'True':
+        print("Training single sample")
         train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
         val_loader = DataLoader(dataset, batch_size=1, shuffle=False)
     else:
+        print("Training more than one samples")
         # Splitting dataset randomly into training and validation (80% and 20% respectively)
         train_sz = round(0.8 * len(dataset))
         val_sz = round(0.2 * len(dataset))
@@ -95,4 +99,8 @@ def main():
     print(f"Duration of running the program: {duration: .2f} seconds")
 
 if __name__ == "__main__":
-    main()
+    with profile(activities=[ProfilerActivity.CUDA], record_shapes=True) as prof:
+        with record_function("model_inference"):
+            main()
+
+    print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
