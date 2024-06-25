@@ -16,8 +16,8 @@ def loss_plot_and_save(run, train_losses, val_losses):
     plt.legend()
     plt.savefig('train_val_loss_plot.png')
 
-    # run.log({"Visualization on training and validation losses": plt})
-    run.log({"train_validation_loss_plot" : wandb.Image(plt)})
+    run.log({"Visualization on training and validation losses": plt})
+    # run.log({"train_validation_loss_plot" : wandb.Image(plt)})
 
     plt.close()
 
@@ -50,8 +50,8 @@ def compare_output_and_gt(run, gt_tensor, out_tensor, epoch):
 
     plt.suptitle(f"MIP images of gt and model output at epoch: {epoch + 1}")
 
-    # run.log({"Visualization on model output and gt": plt})
-    run.log({"model_output_vs_gt" : wandb.Image(plt)})
+    run.log({"Visualization on model output and gt": plt})
+    # run.log({"model_output_vs_gt" : wandb.Image(plt)})
 
     plt.close()
 
@@ -81,13 +81,14 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
         train_pb = tqdm(enumerate(train_loader), 
                             total=len(train_loader), desc=f"Epoch {epoch + 1}/{num_epochs} - Training")
         
-        epoch_train_loss = []
+        epoch_train_loss = 0
         for _, (stack, rfv, truth) in train_pb:
             stack, rfv, truth = stack.to(device), rfv.to(device), truth.to(device)
 
+            print("SIZES: ", stack.shape, rfv.shape, truth.shape)
             optimizer.zero_grad()
             
-            if use_mixed_precision:
+            if use_mixed_precision == 'True':
                 with torch.cuda.amp.autocast(enabled=True):
                     fwd_output = net(rfv, stack)
                     loss = criterion(fwd_output, truth)
@@ -103,10 +104,10 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
 
             # lr_scheduler.step(epoch + i / len(train_loader))
 
-            epoch_train_loss.append(loss.item())
+            epoch_train_loss += loss.item()
 
             # Progress bar with updated current training loss value
-            train_pb.set_postfix({"Current training loss": loss.item()})
+            # train_pb.set_postfix({"Current training loss": loss.item()})
 
         lr_scheduler.step()
 
@@ -115,7 +116,7 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
         # Validation loop
         ##########
         net.eval()
-        epoch_val_loss = []
+        epoch_val_loss = 0
         val_pb = tqdm(enumerate(val_loader), 
                             total=len(val_loader), desc=f"Epoch {epoch + 1}/{num_epochs} - Validating")
         
@@ -123,7 +124,7 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
             for _, (stack, rfv, truth) in val_pb:
                 stack, rfv, truth = stack.to(device), rfv.to(device), truth.to(device)
 
-                if use_mixed_precision:
+                if use_mixed_precision == 'True':
                     with torch.cuda.amp.autocast(enabled=True):
                         fwd_output = net(rfv, stack)
                         loss = criterion(fwd_output, truth)
@@ -131,14 +132,14 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
                     fwd_output = net(rfv, stack)
                     loss = criterion(fwd_output, truth)
 
-                epoch_val_loss.append(loss.item())
+                epoch_val_loss += loss.item()
 
                 # Progress bar with updated current validation loss value
-                val_pb.set_postfix({"Current validation loss": loss.item()})
+                # val_pb.set_postfix({"Current validation loss": loss.item()})
         
         # Calculating average train and validation loss
-        avg_train_loss = sum(epoch_train_loss) / len(epoch_train_loss)
-        avg_val_loss = sum(epoch_val_loss) / len(epoch_val_loss)
+        avg_train_loss = epoch_train_loss / len(train_loader)
+        avg_val_loss = epoch_val_loss / len(val_loader)
 
         train_loss.append(avg_train_loss)
         val_loss.append(avg_val_loss)
@@ -146,8 +147,8 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
         print(f"Epoch [{epoch + 1}/{num_epochs}], Average Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}")
         
         # Logging avg. losses with wandb
-        run.log({'AvgTrainingLoss' : avg_train_loss,
-                 'AvgValidationLoss' : avg_val_loss})
+        run.log({'avg_train_loss' : avg_train_loss,
+                 'avg_val_loss' : avg_val_loss})
         
         # Logging images with wandb
         compare_output_and_gt(run=run, gt_tensor=truth, out_tensor=fwd_output, epoch=epoch)
