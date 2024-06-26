@@ -39,7 +39,7 @@ class TiffDataset(Dataset):
         self.truth_paths = truth_paths
 
     def __len__(self):
-        '''Return length of the dataset.'''
+        '''Return length of the dataset (# of patces per sample)'''
         return len(self.stack_paths)
     
     def __getitem__(self, idx):

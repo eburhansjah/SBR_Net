@@ -70,7 +70,7 @@ def main():
         train_ds, val_ds = random_split(dataset, [train_sz, val_sz])
         
         # Creating training and validation data loaders
-        train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=False)
+        train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

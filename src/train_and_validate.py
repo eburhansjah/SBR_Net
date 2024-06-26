@@ -85,10 +85,11 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
         for _, (stack, rfv, truth) in train_pb:
             stack, rfv, truth = stack.to(device), rfv.to(device), truth.to(device)
 
-            print("SIZES: ", stack.shape, rfv.shape, truth.shape)
+            print(f"Size of stack: {stack.shape}, size of rfv: {rfv.shape}, size of truth: {truth.shape}")
             optimizer.zero_grad()
             
             if use_mixed_precision == 'True':
+                print('Mixed precision is used.')
                 with torch.cuda.amp.autocast(enabled=True):
                     fwd_output = net(rfv, stack)
                     loss = criterion(fwd_output, truth)
@@ -97,6 +98,7 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
                 scaler.step(optimizer)
                 scaler.update()
             else:
+                print('No mixed precision is used.')
                 fwd_output = net(rfv, stack)
                 loss = criterion(fwd_output, truth)
                 loss.backward()
