@@ -20,14 +20,16 @@ def main():
     # Initializing wanb sweep
     run = wandb.init()
     config = run.config
-    print("Configuration of parameters:")
-    pprint.pprint(config)
     
     # Flag on training one or multiple samples (Default: mult. samples)
     train_single_sample = config.get("train_single_sample")
+    print("train_single_sample flag: ", train_single_sample)
 
     # Flag on whether or not to use mixed precision (Default: false)
     use_mixed_precision = config.get("use_mixed_precision")
+    print("use_mixed_precision flag: ", use_mixed_precision)
+
+    print("type of flags from config: ", type(train_single_sample), type(use_mixed_precision))
 
     # Model parameters
     batch_size = config.get("batch_size")
@@ -58,7 +60,7 @@ def main():
     # Converting .tiff files into tensor
     dataset = TiffDataset(stack_paths=stack_paths, rfv_paths=rfv_paths, truth_paths=truth_paths)
 
-    if train_single_sample == 'True':
+    if train_single_sample == True:
         print("Training single sample")
         train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
         val_loader = DataLoader(dataset, batch_size=1, shuffle=False)

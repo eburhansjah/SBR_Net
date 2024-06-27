@@ -26,7 +26,7 @@ cat << EOF > "$qsub_file_path"
 #!/bin/bash -l
 
 #$ -P tianlabdl		    # Specify SCC project name
-#$ -l h_rt=12:00:00	    # Hard time limit for the job
+#$ -l h_rt=1:00:00	    # Hard time limit for the job
 #$ -pe omp 4            # Request 4 CPUs
 #$ -l gpus=1            # Request 1 GPU
 #$ -l gpu_c=6.0         # Specify the minimum GPU compute capability 

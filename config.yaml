@@ -29,10 +29,10 @@ parameters:
   last_epoch:
     value: -1
   num_epochs: 
-    value: 999999
+    value: 5
 
-train_single_sample: 
-  value: True # [True, False]
+  train_single_sample: 
+    value: True # [True, False]
 
-use_mixed_precision: 
-  value: False # [True, False]
+  use_mixed_precision: 
+    value: False # [True, False]
