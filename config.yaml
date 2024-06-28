@@ -22,17 +22,22 @@ parameters:
     value: 1e-4 #[1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
   weight_decay: 
     value: 1e-5 # [1e-3, 1e-5, 1e-7]
+
   T_max:
     value: 100 # [100, 500, 1000]
   eta_min:
     value: 1e-7
   last_epoch:
     value: -1
+
   num_epochs: 
-    value: 5
+    value: 10000
+  
+  quantile:
+    values: [0.1, 0.2, 0.3, 0.7, 0.8, 0.9]
 
   train_single_sample: 
-    value: True # [True, False]
+    value: True # [True, False] # Bool type
 
   use_mixed_precision: 
-    value: False # [True, False]
+    value: False # [True, False] # Bool type
