@@ -19,7 +19,7 @@ def read_pq_file(file_path, one_sample = False):
 
         print("stack_path: ", stack_path)
         print("rfv_path: ", rfv_path)
-        print("ground_truth path: ", ground_truth_path)
+        print("ground_truth path: ", ground_truth_path, "\n")
     else:
         stack_path = df['stack_scat_path'].tolist()
         rfv_path = df['rfv_scat_path'].tolist()

@@ -17,6 +17,8 @@ def loss_plot_and_save(run, train_losses, val_losses):
     plt.savefig('train_val_loss_plot.png')
 
     run.log({"Visualization on training and validation losses": plt})
+
+    ## convert the plot to an image with `wandb.Image(plt)`
     # run.log({"train_validation_loss_plot" : wandb.Image(plt)})
 
     plt.close()
@@ -51,6 +53,8 @@ def compare_output_and_gt(run, gt_tensor, out_tensor, epoch):
     plt.suptitle(f"MIP images of gt and model output at epoch: {epoch + 1}")
 
     run.log({"Visualization on model output and gt": plt})
+    
+    ## convert the plot to an image with `wandb.Image(plt)`
     # run.log({"model_output_vs_gt" : wandb.Image(plt)})
 
     plt.close()
@@ -100,6 +104,7 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
                 scaler.update()
             else:
                 print('No mixed precision is used during training.')
+
                 fwd_output = net(rfv, stack)
                 loss = criterion(fwd_output, truth)
                 loss.backward()
@@ -110,7 +115,7 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
             epoch_train_loss += loss.item()
 
             # Progress bar with updated current training loss value
-            # train_pb.set_postfix({"Current training loss": loss.item()})
+            train_pb.set_postfix({"Current training loss": loss.item()})
 
         lr_scheduler.step()
 
@@ -134,7 +139,7 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
                         fwd_output = net(rfv, stack)
                         loss = criterion(fwd_output, truth)
                 else:
-                    print('Mixed precision is not used during validation.')
+                    print('No Mixed precision is used during validation.')
                     
                     fwd_output = net(rfv, stack)
                     loss = criterion(fwd_output, truth)
@@ -142,7 +147,7 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
                 epoch_val_loss += loss.item()
 
                 # Progress bar with updated current validation loss value
-                # val_pb.set_postfix({"Current validation loss": loss.item()})
+                val_pb.set_postfix({"Current validation loss": loss.item()})
         
         # Calculating average train and validation loss
         avg_train_loss = epoch_train_loss / len(train_loader)

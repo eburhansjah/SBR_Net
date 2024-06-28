@@ -21,15 +21,13 @@ def main():
     run = wandb.init()
     config = run.config
     
-    # Flag on training one or multiple samples (Default: mult. samples)
+    # Flag on training one or multiple samples
     train_single_sample = config.get("train_single_sample")
-    print("train_single_sample flag: ", train_single_sample)
 
-    # Flag on whether or not to use mixed precision (Default: false)
+    # Flag on whether or not to use mixed precision
     use_mixed_precision = config.get("use_mixed_precision")
-    print("use_mixed_precision flag: ", use_mixed_precision)
 
-    print("type of flags from config: ", type(train_single_sample), type(use_mixed_precision))
+    # print("type of flags: ", type(train_single_sample), type(use_mixed_precision)) They're BOOLS
 
     # Model parameters
     batch_size = config.get("batch_size")
@@ -48,6 +46,8 @@ def main():
 
     num_epochs = config.get("num_epochs")
 
+    quantile = config.get("quantile", 0.1) # Default is 0.1
+
     ##Vascular dataset
     # input_file_path = "/ad/eng/research/eng_research_cisl/jalido/sbrnet/data/training_data/UQ/vasc/15/metadata.pq"
     
@@ -62,10 +62,12 @@ def main():
 
     if train_single_sample == True:
         print("Training single sample")
+
         train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
         val_loader = DataLoader(dataset, batch_size=1, shuffle=False)
     else:
         print("Training more than one samples")
+
         # Splitting dataset randomly into training and validation (80% and 20% respectively)
         train_sz = round(0.8 * len(dataset))
         val_sz = round(0.2 * len(dataset))
@@ -87,8 +89,9 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     lr_scheduler = scheduler.CosineAnnealingLR(optimizer, T_max, eta_min, last_epoch)
 
-    # criterion = PinballLoss(quantile=0.1) # Default is 0.1
-    criterion = torch.nn.BCELoss()
+    criterion = PinballLoss(quantile)
+    # criterion = torch.nn.BCELoss()
+
     train_and_validate(run=run, net=model, train_loader=train_loader, val_loader=val_loader,
                     device=device, optimizer=optimizer, scaler=scaler, 
                     lr_scheduler=lr_scheduler, criterion=criterion, num_epochs=num_epochs,
