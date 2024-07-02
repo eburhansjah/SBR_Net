@@ -16,12 +16,12 @@ parameters:
   in_channels_stack:
     value: 9
   num_blocks: 
-    value: 10 #[10, 15, 20]
+    value: 20 #[10, 15, 20]
 
   learning_rate: 
     value: 1e-4 #[1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
   weight_decay: 
-    value: 1e-5 # [1e-3, 1e-5, 1e-7]
+    value: 0 # [1e-3, 1e-5, 1e-7]
 
   T_max:
     value: 100 # [100, 500, 1000]
@@ -34,7 +34,10 @@ parameters:
     value: 10000
   
   quantile:
-    values: [0.1, 0.2, 0.3, 0.7, 0.8, 0.9]
+    value: 0.95
+
+  criterion:
+    value: "PinballLoss"
 
   train_single_sample: 
     value: True # [True, False] # Bool type

@@ -18,15 +18,12 @@ def loss_plot_and_save(run, train_losses, val_losses):
 
     run.log({"Visualization on training and validation losses": plt})
 
-    ## convert the plot to an image with `wandb.Image(plt)`
-    # run.log({"train_validation_loss_plot" : wandb.Image(plt)})
-
     plt.close()
 
     return
 
 '''Fn. for comparing model output and ground truth'''
-def compare_output_and_gt(run, gt_tensor, out_tensor, epoch):
+def compare_output_and_gt(run, gt_tensor, out_tensor, epoch, fig_info):
     gt_tensor = gt_tensor.cpu().detach()
     out_tensor = out_tensor.cpu().detach()
 
@@ -50,12 +47,9 @@ def compare_output_and_gt(run, gt_tensor, out_tensor, epoch):
     plt.colorbar()
     plt.title("Model output image")
 
-    plt.suptitle(f"MIP images of gt and model output at epoch: {epoch + 1}")
+    plt.suptitle(f"MIP images of gt and model output at epoch: {epoch + 1} with {fig_info}")
 
     run.log({"Visualization on model output and gt": plt})
-    
-    ## convert the plot to an image with `wandb.Image(plt)`
-    # run.log({"model_output_vs_gt" : wandb.Image(plt)})
 
     plt.close()
 
@@ -64,7 +58,7 @@ def compare_output_and_gt(run, gt_tensor, out_tensor, epoch):
 
 def train_and_validate(run, net, train_loader, val_loader, device, optimizer, 
                        scaler, lr_scheduler, criterion, num_epochs,
-                       use_mixed_precision):
+                       use_mixed_precision, fig_title):
     if torch.cuda.is_available():
         net.cuda()
 
@@ -163,7 +157,7 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
                  'avg_val_loss' : avg_val_loss})
         
         # Logging images with wandb
-        compare_output_and_gt(run=run, gt_tensor=truth, out_tensor=fwd_output, epoch=epoch)
+        compare_output_and_gt(run=run, gt_tensor=truth, out_tensor=fwd_output, epoch=epoch, fig_info=fig_title)
 
         # # Saving model output after each epoch
         # output_path = os.path.join(save_output_dir, f'epoch_{epoch + 1}_output.tif')

@@ -46,80 +46,84 @@ def main():
 
     num_epochs = config.get("num_epochs")
 
-    print("foo")
-    print(num_epochs)
+    criterion_name = config.get("criterion")
 
-    print(train_single_sample )
-
-    # criterion_name = config.get("criterion")
-    # print("criterion used: ", criterion_name)
-    # print(type(criterion_name))
-
-#     quantile = config.get("quantile", 0.1) # Default is 0.1
+    quantile = config.get("quantile", 0.1) # Default is 0.1
 
 #     ##Vascular dataset
 #     # input_file_path = "/ad/eng/research/eng_research_cisl/jalido/sbrnet/data/training_data/UQ/vasc/15/metadata.pq"
     
-#     # Non-vascular dataset
-#     input_file_path = "metadata.pq"
+    # Non-vascular dataset
+    input_file_path = "metadata.pq"
 
-#     # Reading .tiff files
-#     stack_paths, rfv_paths, truth_paths = read_pq_file(input_file_path, one_sample=train_single_sample)
+    # Reading .tiff files
+    stack_paths, rfv_paths, truth_paths = read_pq_file(input_file_path, one_sample=train_single_sample)
 
-#     # Converting .tiff files into tensor
-#     dataset = TiffDataset(stack_paths=stack_paths, rfv_paths=rfv_paths, truth_paths=truth_paths)
+    # Converting .tiff files into tensor
+    dataset = TiffDataset(stack_paths=stack_paths, rfv_paths=rfv_paths, truth_paths=truth_paths)
 
     if train_single_sample == True:
         print("Training single sample")
 
-#         train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
-#         val_loader = DataLoader(dataset, batch_size=1, shuffle=False)
-#     else:
-#         print("Training more than one samples")
+        train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
+        val_loader = DataLoader(dataset, batch_size=1, shuffle=False)
+    else:
+        print("Training more than one samples")
 
-#         # Splitting dataset randomly into training and validation (80% and 20% respectively)
-#         train_sz = round(0.8 * len(dataset))
-#         val_sz = round(0.2 * len(dataset))
-#         train_ds, val_ds = random_split(dataset, [train_sz, val_sz])
+        # Splitting dataset randomly into training and validation (80% and 20% respectively)
+        train_sz = round(0.8 * len(dataset))
+        val_sz = round(0.2 * len(dataset))
+        train_ds, val_ds = random_split(dataset, [train_sz, val_sz])
         
-#         # Creating training and validation data loaders
-#         train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
-#         val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
+        # Creating training and validation data loaders
+        train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
 
-#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-#     model = SBR_Net(in_channels_rfv=in_channels_rfv, 
-#                     in_channels_stack=in_channels_stack,
-#                     num_blocks=num_blocks).to(device)
-#     model.apply(kaiming_he_init)
+    model = SBR_Net(in_channels_rfv=in_channels_rfv, 
+                    in_channels_stack=in_channels_stack,
+                    num_blocks=num_blocks).to(device)
+    model.apply(kaiming_he_init)
 
-#     # Mixed precision floating point arithmetic to speed up training on GPUs
-#     scaler = torch.cuda.amp.GradScaler()
-#     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
-#     lr_scheduler = scheduler.CosineAnnealingLR(optimizer, T_max, eta_min, last_epoch)
+    # Mixed precision floating point arithmetic to speed up training on GPUs
+    scaler = torch.cuda.amp.GradScaler()
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    lr_scheduler = scheduler.CosineAnnealingLR(optimizer, T_max, eta_min, last_epoch)
 
-#     if criterion_name == 'PinballLoss':
-#         criterion = PinballLoss(quantile)
-#     elif criterion_name == 'BCELoss':
-#         criterion = torch.nn.BCELoss()
-#     else:
-#         print(f"{criterion_name} not recognized. choose from PinballLoss or BCELoss or something else")
+    if criterion_name == "PinballLoss":
+        print(f"Criterion used is {criterion_name}")
 
-#     train_and_validate(run=run, net=model, train_loader=train_loader, val_loader=val_loader,
-#                     device=device, optimizer=optimizer, scaler=scaler, 
-#                     lr_scheduler=lr_scheduler, criterion=criterion, num_epochs=num_epochs,
-#                     use_mixed_precision=use_mixed_precision)
+        fig_title = f"criterion = {criterion_name}, quantile = {str(quantile)}"
+        criterion = PinballLoss(quantile)
+
+        train_and_validate(run=run, net=model, train_loader=train_loader, val_loader=val_loader,
+                    device=device, optimizer=optimizer, scaler=scaler, 
+                    lr_scheduler=lr_scheduler, criterion=criterion, num_epochs=num_epochs,
+                    use_mixed_precision=use_mixed_precision, fig_title=fig_title)
+
+    elif criterion_name == "BCELoss":
+        print(f"Criterion used is {criterion_name}")
+
+        fig_title = f"criterion = {criterion_name}"
+        criterion = torch.nn.BCELoss()
+
+        train_and_validate(run=run, net=model, train_loader=train_loader, val_loader=val_loader,
+                    device=device, optimizer=optimizer, scaler=scaler, 
+                    lr_scheduler=lr_scheduler, criterion=criterion, num_epochs=num_epochs,
+                    use_mixed_precision=use_mixed_precision, fig_title=fig_title)
+    else:
+        print(f"{criterion_name} not recognized. Please choose either PinballLoss or BCELoss.")
     
-#     wandb.finish() # End loggin with wandb
+    wandb.finish() # End loggin with wandb
 
-#     end_time = time.time()
-#     duration = end_time - start_time
-#     print(f"Duration of running the program: {duration: .2f} seconds")
+    end_time = time.time()
+    duration = end_time - start_time
+    print(f"Duration of running the program: {duration: .2f} seconds")
 
 if __name__ == "__main__":
-    main()
-    # with profile(activities=[ProfilerActivity.CUDA], record_shapes=True) as prof:
-    #     with record_function("model_inference"):
-    #         main()
+    with profile(activities=[ProfilerActivity.CUDA], record_shapes=True) as prof:
+        with record_function("model_inference"):
+            main()
 
-    # print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
+    print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
