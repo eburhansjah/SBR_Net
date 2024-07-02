@@ -11,9 +11,9 @@
 
 #$ -j y				    # Merging error and output streams into single file
 
-#$ -t 1-6              # array jobs to define number of nodes/sweep agents to use on the SCC
+#$ -t 1              # array jobs to define number of nodes/sweep agents to use on the SCC
 
 module load python3/3.10.12
 source /projectnb/tianlabdl/eburhan/SBR_Net/.venv/bin/activate
 
-wandb agent --count 1 cisl-bu/SBR_Net_eburhan/0z6mwps4        # Using generated sweep ID
+wandb agent --count 1 cisl-bu/SBR_Net_eburhan/00p2bizr        # Using generated sweep ID

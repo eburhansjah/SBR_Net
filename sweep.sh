@@ -6,8 +6,15 @@ random_suffix=$(($RANDOM % 1000))  # Generates a random number between 0 and 999
 
 jobname="SBR_Net_eburhan_${timestamp}_${random_suffix}"
 
+# Check if the sweep name and project name are provided
+if [ -z "$1" ]; then
+  echo "Error: Sweep name or project name not provided. Usage: $0 <sweep_name> <project_name>"
+  exit 1
+fi
+sweep_name=$1
+
 # Generating sweep ID
-sweep_id_output=$(wandb sweep --project SBR_Net_eburhan --entity cisl-bu config.yaml 2>&1)
+sweep_id_output=$(wandb sweep --name "$sweep_name" --project SBR_Net_eburhan --entity cisl-bu config.yaml 2>&1)
 
 sweep_id=$(echo "$sweep_id_output" | grep -oP '(?<=Creating sweep with ID: )[a-zA-Z0-9]+')
 
@@ -35,7 +42,7 @@ cat << EOF > "$qsub_file_path"
 
 #$ -j y				    # Merging error and output streams into single file
 
-#$ -t 1-6              # array jobs to define number of nodes/sweep agents to use on the SCC
+#$ -t 1              # array jobs to define number of nodes/sweep agents to use on the SCC
 
 module load python3/3.10.12
 source /projectnb/tianlabdl/eburhan/SBR_Net/.venv/bin/activate
