@@ -20,6 +20,9 @@ def main():
     # Initializing wanb sweep
     run = wandb.init()
     config = run.config
+
+    print("wandb configurations:")
+    pprint.pprint(config)
     
     # Flag on training one or multiple samples
     train_single_sample = config.get("train_single_sample")
@@ -46,9 +49,11 @@ def main():
 
     num_epochs = config.get("num_epochs")
 
+    patch_size = config.get("patch_size")
+
     criterion_name = config.get("criterion")
 
-    quantile = config.get("quantile", 0.1) # Default is 0.1
+    quantile = config.get("quantile") # Default is 0.1
 
 #     ##Vascular dataset
 #     # input_file_path = "/ad/eng/research/eng_research_cisl/jalido/sbrnet/data/training_data/UQ/vasc/15/metadata.pq"
@@ -60,13 +65,13 @@ def main():
     stack_paths, rfv_paths, truth_paths = read_pq_file(input_file_path, one_sample=train_single_sample)
 
     # Converting .tiff files into tensor
-    dataset = TiffDataset(stack_paths=stack_paths, rfv_paths=rfv_paths, truth_paths=truth_paths)
+    dataset = TiffDataset(stack_paths=stack_paths, rfv_paths=rfv_paths, truth_paths=truth_paths, patch_size=patch_size)
 
     if train_single_sample == True:
         print("Training single sample")
 
-        train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
-        val_loader = DataLoader(dataset, batch_size=1, shuffle=False)
+        train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     else:
         print("Training more than one samples")
 
@@ -75,7 +80,7 @@ def main():
         val_sz = round(0.2 * len(dataset))
         train_ds, val_ds = random_split(dataset, [train_sz, val_sz])
         
-        # Creating training and validation data loaders
+        # Creating training and validation data loaders. batch_size=9 in paper
         train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
 
@@ -93,6 +98,7 @@ def main():
 
     if criterion_name == "PinballLoss":
         print(f"Criterion used is {criterion_name}")
+        print(f"Quantile used is {str(quantile)}")
 
         fig_title = f"criterion = {criterion_name}, quantile = {str(quantile)}"
         criterion = PinballLoss(quantile)
@@ -122,8 +128,9 @@ def main():
     print(f"Duration of running the program: {duration: .2f} seconds")
 
 if __name__ == "__main__":
-    with profile(activities=[ProfilerActivity.CUDA], record_shapes=True) as prof:
-        with record_function("model_inference"):
-            main()
+    main()
+    # with profile(activities=[ProfilerActivity.CUDA], record_shapes=True) as prof:
+    #     with record_function("model_inference"):
+    #         main()
 
-    print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
+    # print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))

@@ -29,14 +29,39 @@ def read_pq_file(file_path, one_sample = False):
     
 
 ##########
+# Creating Patchify class
+# Reference: https://mrinath.medium.com/vit-part-1-patchify-images-using-pytorch-unfold-716cd4fd4ef6
+##########
+class Patchify(nn.Module):
+    def __init__(self, patch_size):
+        super().__init__()
+        self.p = patch_size
+        self.unfold = torch.nn.Unfold(kernel_size=patch_size, stride=patch_size)
+
+    def forward(self, x):
+        # x -> B c h w
+        batch_size, channels, H, W = x.shape
+        
+        x = self.unfold(x)
+        # x -> B (c*p*p) L
+        
+        # Reshaping into the shape we want
+        a = x.view(batch_size, channels, self.p, self.p, -1).permute(0, 4, 1, 2, 3)
+        # a -> ( B num_patches c p p )
+        return a
+
+
+##########
 # Creating Data Loader
 ##########
 class TiffDataset(Dataset):
-    def __init__(self, stack_paths, rfv_paths, truth_paths):
+    def __init__(self, stack_paths, rfv_paths, truth_paths, patch_size):
         super(TiffDataset, self).__init__()
         self.stack_paths = stack_paths
         self.rfv_paths = rfv_paths
         self.truth_paths = truth_paths
+
+        self.patchify = Patchify(patch_size)
 
     def __len__(self):
         '''Return length of the dataset (# of patces per sample)'''
@@ -63,6 +88,19 @@ class TiffDataset(Dataset):
         rfv_tensor = torch.tensor(rfv, dtype=torch.float32)
         truth_tensor = torch.tensor(truth, dtype=torch.float32)
 
-        print("Normalized images")
+        # Adding batch dimension [batch=1, channel, H, W]
+        if len(stack_tensor.shape) == 3:
+            stack_tensor = stack_tensor.unsqueeze(0)
+        if len(rfv_tensor.shape) == 3:
+            rfv_tensor = rfv_tensor.unsqueeze(0)
+        if len(truth_tensor.shape) == 3:
+            truth_tensor = truth_tensor.unsqueeze(0)
+
+        # Apply Patchify on dataset
+        stack_patches = self.patchify(stack_tensor)
+        rfv_patches = self.patchify(rfv_tensor)
+        truth_patches = self.patchify(truth_tensor)
+
+        print("Normalized and patchified images")
 
         return stack_tensor, rfv_tensor, truth_tensor
