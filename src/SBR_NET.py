@@ -62,7 +62,8 @@ class ResBlock(nn.Module):
         out = self.conv1(x)
         out = self.conv2(out)
 
-        out += residual / math.sqrt(2)
+        # out += residual / math.sqrt(2)
+        out = (out + residual) / math.sqrt(2)
 
         return out
 
