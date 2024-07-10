@@ -84,6 +84,8 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
             stack, rfv, truth = stack.to(device), rfv.to(device), truth.to(device)
 
             print(f"Size of stack: {stack.shape}, size of rfv: {rfv.shape}, size of truth: {truth.shape}")
+            """Size of stack: torch.Size([1, 9, 512, 512]), size of rfv: torch.Size([1, 24, 512, 512]), 
+            size of truth: torch.Size([1, 24, 512, 512])"""
             optimizer.zero_grad()
             
             if use_mixed_precision == True:
@@ -156,8 +158,8 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
         run.log({'avg_train_loss' : avg_train_loss,
                  'avg_val_loss' : avg_val_loss})
         
-        # Logging images with wandb
-        compare_output_and_gt(run=run, gt_tensor=truth, out_tensor=fwd_output, epoch=epoch, fig_info=fig_title)
+    # Logging images with wandb
+    compare_output_and_gt(run=run, gt_tensor=truth, out_tensor=fwd_output, epoch=epoch, fig_info=fig_title)
 
         # # Saving model output after each epoch
         # output_path = os.path.join(save_output_dir, f'epoch_{epoch + 1}_output.tif')
