@@ -10,7 +10,7 @@ from loss import PinballLoss
 from src.train_and_validate import train_and_validate
 from torch.utils.data import DataLoader, random_split
 from torch.profiler import profile, record_function, ProfilerActivity
-from data_loader import read_pq_file, TiffDataset
+from dataset import read_pq_file, NoPatchDataset, PatchDataset
 from src.SBR_NET import SBR_Net, kaiming_he_init
 
 
@@ -30,6 +30,9 @@ def main():
     # Flag on whether or not to use mixed precision
     use_mixed_precision = config.get("use_mixed_precision")
 
+    # Flag on whether or not to use patches
+    use_patches = config.get("use_patches")
+
     # print("type of flags: ", type(train_single_sample), type(use_mixed_precision)) They're BOOLS
 
     # Model parameters
@@ -47,9 +50,9 @@ def main():
     eta_min = config.get("eta_min")
     last_epoch = config.get("last_epoch")
 
-    num_epochs = config.get("num_epochs")
+    patch_size = config.get("patch_size") # tuple(config.get("patch_size"))
 
-    patch_size = config.get("patch_size")
+    num_epochs = config.get("num_epochs")
 
     criterion_name = config.get("criterion")
 
@@ -64,14 +67,22 @@ def main():
     # Reading .tiff files
     stack_paths, rfv_paths, truth_paths = read_pq_file(input_file_path, one_sample=train_single_sample)
 
-    # Converting .tiff files into tensor
-    dataset = TiffDataset(stack_paths=stack_paths, rfv_paths=rfv_paths, truth_paths=truth_paths, patch_size=patch_size)
+    # Check if using patches
+    if use_patches == True:
+        print("Training dataset with patches")
 
+        dataset = PatchDataset(stack_paths=stack_paths, rfv_paths=rfv_paths, truth_paths=truth_paths, patch_size=patch_size)
+    else:
+        print("Training dataset without patches")
+
+        dataset = NoPatchDataset(stack_paths=stack_paths, rfv_paths=rfv_paths, truth_paths=truth_paths)
+
+    # Check if training single sample
     if train_single_sample == True:
         print("Training single sample")
 
-        train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-        val_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+        train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
+        val_loader = DataLoader(dataset, batch_size=1, shuffle=False)
     else:
         print("Training more than one samples")
 
