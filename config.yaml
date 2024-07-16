@@ -12,34 +12,34 @@ parameters:
   batch_size: 
     value: 1 # [4, 8, 16, 32]
   patch_size:
-    value: 64
+    value: 128
   in_channels_rfv: 
     value: 24
   in_channels_stack:
     value: 9
   num_blocks: 
-    value: 20 # values: [20, 30, 40] # In paper, it's 20
+    values: [20, 30, 40] # values: [20, 30, 40] # In paper, it's 20
 
   learning_rate: 
-    value: 1e-6 # values: [1e-6, 1e-8, 1e-10] #[1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
+    values: [1e-6, 1e-8, 1e-10] # values: [1e-6, 1e-8, 1e-10] #[1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
   weight_decay: 
     value: 0 # [1e-3, 1e-5, 1e-7]
 
   T_max:
-    value: 500 # values: [500, 1000] # [100, 500, 1000]
+    values: [500, 1000] # values: [500, 1000] # [100, 500, 1000]
   eta_min:
     value: 1e-4
   last_epoch:
     value: -1
 
   num_epochs: 
-    value: 15000
+    value: 15000 # 15000
   
   quantile:
     value: 0.5
 
   criterion:
-    value: "BCELoss" # ["PinballLoss", "BCELoss"]
+    value: "PinballLoss" # ["PinballLoss", "BCELoss"]
 
   train_single_sample: 
     value: True # [True, False] # Bool type
@@ -47,5 +47,5 @@ parameters:
   use_mixed_precision: 
     value: False # [True, False] # Bool type
 
-  use_patches:
+  use_single_patches:
     value: True
