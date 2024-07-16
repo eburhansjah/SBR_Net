@@ -32,25 +32,6 @@ def read_pq_file(file_path, one_sample = False):
     return stack_path, rfv_path, ground_truth_path
 
 
-# ##########
-# # Function that extract patches from dataset
-# ##########
-# def patchify(input_array, patch_size=(64, 64), stride=(64, 64)):
-#     patches = []
-
-#     Z, H, W = input_array.shape
-
-#     patch_H, patch_W = patch_size
-#     stride_H, stride_W = stride
-
-#     for i in range(0, H - patch_H+1, stride_H):
-#         for j in range(0, W - patch_W+1, stride_W):
-#             patch = input_array[:, i:i + patch_H, j:j + patch_W]
-#             patches.append(patch)
-    
-#     return np.array(patches)
-
-
 ##########
 # Creating class for dataset without patches
 ##########
@@ -93,6 +74,55 @@ class NoPatchDataset(Dataset):
 
 
 ##########
+# Creating class for single patch dataset
+# Generating one random patch with consistent location and size across all images for 
+# stack, rfv, and truth
+##########
+class SinglePatchDataset(Dataset):
+    def __init__(self, stack_paths, rfv_paths, truth_paths, patch_size):
+        super(SinglePatchDataset, self).__init__()
+        self.stack_paths = stack_paths
+        self.rfv_paths = rfv_paths
+        self.truth_paths = truth_paths
+        self.patch_size = patch_size
+
+    def __len__(self):
+        '''Return number of patches per sample'''
+        return len(self.stack_paths)
+    
+    def __getitem__(self, idx): 
+        '''Reading .tiff files'''
+        stack = tifffile.imread(self.stack_paths[idx])
+        rfv = tifffile.imread(self.rfv_paths[idx])
+        truth = tifffile.imread(self.truth_paths[idx])
+
+        '''Calculating random starting points for the patch'''
+        H, W = stack.shape[-2], stack.shape[-1]
+
+        row_start = torch.randint(0, H - self.patch_size + 1, (1,)).item()
+        col_start = torch.randint(0, W - self.patch_size + 1, (1,)).item()
+
+        '''Extracting patches'''
+        stack_patch = stack[:, row_start:row_start + self.patch_size, col_start:col_start + self.patch_size]
+        rfv_patch = rfv[:, row_start:row_start + self.patch_size, col_start:col_start + self.patch_size]
+        truth_patch = truth[:, row_start:row_start + self.patch_size, col_start:col_start + self.patch_size]
+
+        '''Normalizing'''
+        stack_patch = stack_patch.astype('float32') / 65535.0
+        rfv_patch = rfv_patch.astype('float32') / 65535.0
+        truth_patch = truth_patch.astype('float32') / 65535.0
+
+        '''Converting to tensor'''
+        stack_patch_tensor = torch.tensor(stack_patch, dtype=torch.float32)
+        rfv_patch_tensor = torch.tensor(rfv_patch, dtype=torch.float32)
+        truth_patch_tensor = torch.tensor(truth_patch, dtype=torch.float32)
+
+        # print(f"Shapes of PatchDataset | stack: {stack_patch_tensor.shape}, rfv: {rfv_patch_tensor.shape}, truth: {truth_patch_tensor.shape}")
+
+        return stack_patch_tensor, rfv_patch_tensor, truth_patch_tensor
+
+
+##########
 # Creating class for patch dataset
 ##########
 class PatchDataset(Dataset):
@@ -113,8 +143,8 @@ class PatchDataset(Dataset):
         return total_patches
     
     def __getitem__(self, idx):
-        '''Retrieve a specific patch'''
-        # Find which image the patch belongs to
+        '''Retrieve a specific patch
+        Find which image the patch belongs to'''
         accumulated_patches = 0
         for i, path in enumerate(self.stack_paths):
             image = tifffile.imread(path)
@@ -134,14 +164,14 @@ class PatchDataset(Dataset):
         rfv = tifffile.imread(self.rfv_paths[image_idx])
         truth = tifffile.imread(self.truth_paths[image_idx])
 
-        # Calculate row and column for the patch
+        '''Calculating row and column for the patch'''
         patch_row = patch_idx // num_patches_w
         patch_col = patch_idx % num_patches_w
 
         row_start = patch_row * self.patch_size
         col_start = patch_col * self.patch_size
 
-        # Extract patches
+        '''Extracting patches'''
         stack_patch = stack[:, row_start:row_start + self.patch_size, col_start:col_start + self.patch_size]
         rfv_patch = rfv[:, row_start:row_start + self.patch_size, col_start:col_start + self.patch_size]
         truth_patch = truth[:, row_start:row_start + self.patch_size, col_start:col_start + self.patch_size]
@@ -159,11 +189,3 @@ class PatchDataset(Dataset):
         # print(f"Shapes of PatchDataset | stack: {stack_patch_tensor.shape}, rfv: {rfv_patch_tensor.shape}, truth: {truth_patch_tensor.shape}")
 
         return stack_patch_tensor, rfv_patch_tensor, truth_patch_tensor
-
-
-'''
-TO DO:
-- have patchify as separate file and return a list of patches before converting to tensor
-- store patches in a folder?
-- generate patches on the fly or store it somewhere is better?
-'''

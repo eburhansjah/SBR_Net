@@ -10,7 +10,7 @@ from loss import PinballLoss
 from src.train_and_validate import train_and_validate
 from torch.utils.data import DataLoader, random_split
 from torch.profiler import profile, record_function, ProfilerActivity
-from dataset import read_pq_file, NoPatchDataset, PatchDataset
+from dataset import read_pq_file, NoPatchDataset, PatchDataset, SinglePatchDataset
 from src.SBR_NET import SBR_Net, kaiming_he_init
 
 
@@ -31,7 +31,7 @@ def main():
     use_mixed_precision = config.get("use_mixed_precision")
 
     # Flag on whether or not to use patches
-    use_patches = config.get("use_patches")
+    use_single_patches = config.get("use_single_patches")
 
     # print("type of flags: ", type(train_single_sample), type(use_mixed_precision)) They're BOOLS
 
@@ -68,10 +68,11 @@ def main():
     stack_paths, rfv_paths, truth_paths = read_pq_file(input_file_path, one_sample=train_single_sample)
 
     # Check if using patches
-    if use_patches == True:
-        print("Training dataset with patches")
+    if use_single_patches == True:
+        print("Training dataset with single patches")
 
-        dataset = PatchDataset(stack_paths=stack_paths, rfv_paths=rfv_paths, truth_paths=truth_paths, patch_size=patch_size)
+        dataset = SinglePatchDataset(stack_paths=stack_paths, rfv_paths=rfv_paths, 
+                                truth_paths=truth_paths, patch_size=patch_size)
     else:
         print("Training dataset without patches")
 
