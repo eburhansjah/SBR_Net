@@ -82,7 +82,7 @@ def main():
     if train_single_sample == True:
         print("Training single sample")
 
-        train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
+        train_loader = DataLoader(dataset, batch_size=1, shuffle=False)
         val_loader = DataLoader(dataset, batch_size=1, shuffle=False)
     else:
         print("Training more than one samples")
