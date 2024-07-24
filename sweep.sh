@@ -33,8 +33,8 @@ cat << EOF > "$qsub_file_path"
 #!/bin/bash -l
 
 #$ -P tianlabdl		    # Specify SCC project name
-#$ -l h_rt=12:00:00	    # Hard time limit for the job
-#$ -pe omp 8           # Request 4 CPUs
+#$ -l h_rt=24:00:00	    # Hard time limit for the job
+#$ -pe omp 28           # Request 4 CPUs
 #$ -l gpus=1            # Request 1 GPU
 #$ -l gpu_c=6.0         # Specify the minimum GPU compute capability 
 
@@ -42,7 +42,7 @@ cat << EOF > "$qsub_file_path"
 
 #$ -j y				    # Merging error and output streams into single file
 
-#$ -t 1              # array jobs to define number of nodes/sweep agents to use on the SCC
+#$ -t 1-10              # array jobs to define number of nodes/sweep agents to use on the SCC
 
 module load python3/3.10.12
 source /projectnb/tianlabdl/eburhan/SBR_Net/.venv/bin/activate
