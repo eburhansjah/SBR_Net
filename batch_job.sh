@@ -1,11 +1,11 @@
 #!/bin/bash -l
 
 #$ -P tianlabdl		# Specify SCC project name
-#$ -l h_rt=12:00:00		# Hard time limit for the job
+#$ -l h_rt=24:00:00		# Hard time limit for the job
 #$ -pe omp 4        # Request 4 CPUs
 #$ -l gpus=1        # Request 1 GPU
 #$ -l gpu_c=6.0     # Specify the minimum GPU compute capability 
-
+#$ -t 1             # Specify the number of tasks to be created
 #$ -m e				# Notify through email
 
 #$ -N SBR_Net		# Specify job name
