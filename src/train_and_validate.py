@@ -2,13 +2,17 @@ import os
 import torch
 # import wandb
 import matplotlib.pyplot as plt
+import numpy as np
 
 from tqdm import tqdm
 
 
 def loss_plot_and_save(run, train_losses, val_losses):
-    plt.plot(train_losses, label='Training Loss')
-    plt.plot(val_losses, label='Validation Loss')
+    log_train_losses = np.log(train_losses)
+    log_val_losses = np.log(val_losses)
+
+    plt.plot(log_train_losses, label='Training Loss')
+    plt.plot(log_val_losses, label='Validation Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
 
@@ -16,7 +20,7 @@ def loss_plot_and_save(run, train_losses, val_losses):
     plt.legend()
     plt.savefig('train_val_loss_plot.png')
 
-    run.log({"Visualization on training and validation losses": plt})
+    run.log({"Logarithmic training and validation losses": plt})
 
     plt.close()
 
@@ -56,7 +60,7 @@ def compare_output_and_gt(run, gt_tensor, out_tensor, epoch, fig_info):
     return
 
 
-def train_and_validate(run, net, train_loader, val_loader, device, optimizer, 
+def train_and_validate(net, train_loader, val_loader, device, optimizer, 
                        scaler, lr_scheduler, criterion, num_epochs,
                        use_mixed_precision, fig_title):
     if torch.cuda.is_available():
@@ -113,6 +117,9 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
             # Progress bar with updated current training loss value
             train_pb.set_postfix({"Current training loss": loss.item()})
 
+        # Clear cache after training loop for the epoch
+        torch.cuda.empty_cache()
+
         lr_scheduler.step()
 
 
@@ -144,6 +151,9 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
 
                 # Progress bar with updated current validation loss value
                 val_pb.set_postfix({"Current validation loss": loss.item()})
+            
+        # Clear cache after training loop for the epoch
+        torch.cuda.empty_cache()
         
         # Calculating average train and validation loss
         avg_train_loss = epoch_train_loss / len(train_loader)
@@ -155,8 +165,8 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
         print(f"Epoch [{epoch + 1}/{num_epochs}], Average Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}")
         
         # Logging avg. losses with wandb
-        run.log({'avg_train_loss' : avg_train_loss,
-                 'avg_val_loss' : avg_val_loss})
+        # run.log({'avg_train_loss' : avg_train_loss,
+        #          'avg_val_loss' : avg_val_loss})
         
         # # Logging images with wandb after every 5000 epochs
         # if (epoch+1) % 10000 == 0:
@@ -167,11 +177,11 @@ def train_and_validate(run, net, train_loader, val_loader, device, optimizer,
         # tifffile.imwrite(output_path, fwd_output.cpu().numpy())
 
     # Logging image for the last epoch with wandb
-    compare_output_and_gt(run=run, gt_tensor=truth, out_tensor=fwd_output, epoch=epoch, fig_info=fig_title)
+    # compare_output_and_gt(run=run, gt_tensor=truth, out_tensor=fwd_output, epoch=epoch, fig_info=fig_title)
     
     print('Finished Training and Validating with values logged in wandb!')
 
     # Plotting training and validation loss
-    loss_plot_and_save(run, train_loss, val_loss)
+    # loss_plot_and_save(run, train_loss, val_loss)
 
     return net
